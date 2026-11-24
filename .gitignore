@@ -1,0 +1,32 @@
+# Excel originals and working copies (kept outside git; the full Scribd-derived
+# table must not be committed)
+*.xlsx
+*.xlsm
+*.xls
+~$*
+
+# Generated report: one line per row of the full table, rebuilt by src/compare.py
+comparison_report.csv
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Secrets / API keys
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+secrets*
+*credentials*.json
+*api_key*
+*apikey*
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
