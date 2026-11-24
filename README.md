@@ -107,7 +107,7 @@ The one Strong match (Cat 5D-3632 / 6Y-9885 → MOX7312) rests on two dimensions
 
 ### Gold set
 
-I labelled 8 real rows by hand, with the code's answer hidden, and added 3 **synthetic** rows (marked S1–S3) to test cases the real data never produced: Conflict, and a three-dimension match. The real rows are in `data/gold_set.csv`; the synthetic rows are defined in `src/compare_llm.py`.
+I labelled 9 real rows by hand, with the code's answer hidden, and added 3 **synthetic** rows (marked S1–S3) to test cases the real data never produced: Conflict, and a three-dimension match. The real rows are in `data/gold_set.csv`; the synthetic rows are defined in `src/compare_llm.py`.
 
 ### Code tests
 
@@ -154,7 +154,7 @@ Scalability was the other issue I met. This prototype has only 44 hand-picked ro
 - **Lookup only finds what the table lists.** It does not discover new equivalents.
 - **Dimensions were entered by hand.** Nothing is fetched automatically yet.
 - **The LLM test covers the decision step only.** It received numbers that were already extracted.
-- **Small gold set** (8 real rows + 3 synthetic); the precision figures prove little at this size.
+- **Small gold set** (9 real rows + 3 synthetic); the precision figures prove little at this size.
 - **Unverified sources.** The cross-reference table is a third-party document, and the 5D-3632 → 6Y-9885 supersession is from my own research and not confirmed by Caterpillar.
 
 ## Next steps
