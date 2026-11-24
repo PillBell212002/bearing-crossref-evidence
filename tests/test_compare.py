@@ -46,6 +46,34 @@ class CompareDimsTests(unittest.TestCase):
                          "Different dimension types: Cat gives roller_ID, brand gives bore. "
                          "Verify: find the brand's roller_ID (or Cat's bore).")
 
+    # Synthetic: row 27's two matching pairs (roller_ID, OD), a clear brand, and a
+    # Dimension source that says "Assumed". Rule 1 (assumed/inferred sizes) is
+    # checked before Strong, so the result is Unknown, not Strong.
+    def test_assumed_source_beats_two_matching_pairs(self):
+        row = dict(ROW[27], **{"Brand (as printed)": "NTN",
+                               "Dimension source": "Assumed = NTN M0X7312A"})
+        level, reason = compare_dims(row)
+        self.assertEqual(level, "Unknown")
+        self.assertIn("assumed/inferred", reason)
+
+    # Synthetic: row 27's two matching pairs with brand "DROZD" (unclear).
+    # The brand check (rule 4) comes after Strong/Partial (rule 3) -> Strong.
+    def test_unclear_brand_with_two_matching_pairs_is_strong(self):
+        row = dict(ROW[27], **{"Brand (as printed)": "DROZD"})
+        level, reason = compare_dims(row)
+        self.assertEqual(level, "Strong")
+        self.assertNotIn("unclear", reason)
+
+    # Synthetic: blank brand and Cat OD 114.43 vs brand OD 112.431 (differs by
+    # more than 0.05 mm). Conflict (rule 2) comes before the brand check -> Conflict.
+    def test_blank_brand_with_conflicting_pair_is_conflict(self):
+        row = dict(ROW[27], **{"Brand (as printed)": None,
+                               "Cat dim value (mm)": "77.56; 114.43",
+                               "Cat dim type": "roller_ID; OD"})
+        level, reason = compare_dims(row)
+        self.assertEqual(level, "Conflict")
+        self.assertIn("OD Cat 114.43 vs brand 112.431", reason)
+
     # Row 35 (5D-6297 / 93825): Cat bore 209.55 vs brand bore 209.55 -> Partial.
     def test_row_35_partial(self):
         level, reason = compare_dims(ROW[35])

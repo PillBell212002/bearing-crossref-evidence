@@ -61,13 +61,10 @@ def brand_dims(row):
     return {t: v for t, v in found.items() if v is not None}
 
 
-# Says why a row's brand side can't be trusted, or "" if it can.
-# Reasons: unclear brand name, dimensions not found / unverified,
-# or sizes that were assumed or inferred.
-def unknown_reason(row):
-    brand = str(row.get("Brand (as printed)") or "").strip()
-    if brand in UNCLEAR_BRANDS:
-        return "brand blank" if brand == "" else f"brand '{brand}' unclear"
+# Says why the brand-side SIZES can't be trusted, or "" if they can:
+# Dimension status "Not found"/"Unverified", or Dimension source says
+# assumed/inferred. Checked before any comparison (rule 1).
+def dimension_reason(row):
     status = row.get("Dimension status")
     if status in ("Not found", "Unverified"):
         return f"dimension status '{status}'"
@@ -77,13 +74,30 @@ def unknown_reason(row):
     return ""
 
 
+# Says why the brand NAME is unclear, or "" if it is clear: "Brand (as printed)",
+# trimmed, is exactly one of UNCLEAR_BRANDS (case-sensitive; blank counts).
+# Checked only after Conflict/Strong/Partial (rule 4).
+def brand_reason(row):
+    brand = str(row.get("Brand (as printed)") or "").strip()
+    if brand in UNCLEAR_BRANDS:
+        return "brand blank" if brand == "" else f"brand '{brand}' unclear"
+    return ""
+
+
 # Works out the evidence level for one row from its sizes, and returns
 # (level, reason). Only sizes of the same type are compared (bore with bore,
 # roller_ID with roller_ID, OD with OD, width with width), within ±0.05 mm.
-# Order: Conflict, Strong, Partial, then Unknown, then Source only.
-# Cat sizes with no same-type brand size (e.g. Cat roller_ID vs brand bore)
-# give Unknown, with a note on which size to look up.
+# Order (first rule that fits wins):
+#   1. Dimension status Not found/Unverified, or source assumed/inferred -> Unknown
+#   2. Conflict   3. Strong / Partial
+#   4. Brand (as printed) in UNCLEAR_BRANDS -> Unknown
+#   5. Cat sizes exist but no same-type pair -> Unknown (with a note on which size to look up)
+#   6. No Cat sizes -> Source only
 def compare_dims(row):
+    why = dimension_reason(row)
+    if why:
+        return "Unknown", f"Brand sizes not usable; {why}."
+
     cat = cat_dims(row)
     brand = brand_dims(row)
 
@@ -105,7 +119,7 @@ def compare_dims(row):
     if len(pairs) == 1:
         return "Partial", f"Compared: {compared}."
 
-    why = unknown_reason(row)
+    why = brand_reason(row)
     if why:
         extra = f" ({compared})" if compared else ""
         return "Unknown", f"No same-type pair; {why}{extra}."
